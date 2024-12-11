@@ -1,3 +1,4 @@
+# Secure Supply Chain Management
 A project on secure supply chain management for manufacturing could focus on ensuring the confidentiality, integrity, and authenticity of data exchanged between various entities within the supply chain. This project would address potential vulnerabilities in digital communication between manufacturers, suppliers, and customers, especially critical in aerospace where security and precision are crucial.
 
 Other resources: How to use blockchain to secure a supply chain
