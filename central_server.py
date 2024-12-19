@@ -11,9 +11,7 @@ PORT = 6226
 
 # Get password and username variables from client
 def get_login(log_data):
-    # Split where char = ':'
     username, password = log_data.split(":")
-
     return username, password
 
 # Might write to serperate file and use import
