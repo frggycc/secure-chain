@@ -11,8 +11,6 @@ PORT = 6226
 
 # Get password and username variables from client
 def get_login(log_data):
-    log_data = client_socket.recv(1024).decode()
-
     # Split where char = ':'
     username, password = log_data.split(":")
 
