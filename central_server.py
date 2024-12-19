@@ -9,6 +9,15 @@ MAX_CONNECTIONS = 10;
 HOST = '127.0.0.1'
 PORT = 6226
 
+# Get password and username variables from client
+def get_login(log_data):
+    log_data = client_socket.recv(1024).decode()
+
+    # Split where char = ':'
+    username, password = log_data.split(":")
+
+    return username, password
+
 # Might write to serperate file and use import
 def handle_client(client_socket, client_address):
     while True:
@@ -23,14 +32,7 @@ def handle_client(client_socket, client_address):
 
                 # Receive password and username from client
                 log_data = client_socket.recv(1024).decode()
-                if not log_data:
-                    break
-
-                # Split where char = ':'
-                username, password = log_data.split(":")
-
-                print("Login: ", username)
-                print("Pass : ", password)
+                username, password = get_login(log_data)
 
                 # Check if login valid and successful
                 valid_login = log_in(username, password)
@@ -44,13 +46,9 @@ def handle_client(client_socket, client_address):
                 print("In choice 1...")
                 client_socket.send("Creating account...".encode())
 
-                # Receive new password and username from client
+                # Receive password and username from client
                 log_data = client_socket.recv(1024).decode()
-                if not log_data:
-                    break
-
-                # Split where char = ':'
-                username, password = log_data.split(":")
+                username, password = get_login(log_data)
 
                 # Check if creation successful or not
                 valid_login = create_account(username, password)
