@@ -13,8 +13,7 @@ if __name__ == "__main__":
     print(" 2. Login into existing")
     choice = input(" Enter your choice (1 or 2): ")
 
-    # If already exists
-    if choice == "2":
+    if choice == "1" or choice == "2":
         client_socket.send(choice.encode())
         status = client_socket.recv(1024).decode()
         print()
@@ -28,21 +27,6 @@ if __name__ == "__main__":
         # Was the sign-in valid?
         sign_valid = client_socket.recv(1024).decode()
         print(sign_valid)
-    # If a new one needs to be created
-    elif choice == "1":
-        client_socket.send(choice.encode())
-        status = client_socket.recv(1024).decode()
-        print()
-        print(status)
-
-        # New username and password to be used
-        username = input("Username: ")
-        password = input("Password: ")
-        client_socket.send((f"{username}:{password}").encode())
-
-        # Was the creation valid?
-        create_valid = client_socket.recv(1024).decode()
-        print(create_valid)
     #If no valid choice picked
     else:
         client_socket.send(choice.encode())
@@ -50,5 +34,4 @@ if __name__ == "__main__":
         
         print(status)
     
-
 client_socket.close()
