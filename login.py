@@ -8,11 +8,11 @@ def create_account(username, password):
     # Check if user already exists
     with open('db.txt', 'r') as db:
         for line in db:
-            existing_username, _ = line.strip().split('', 1)
+            existing_username, _ = line.strip().split(' ', 1)
 
             # Returns to create account screen is username exists
             if existing_username == username:
-                print("Username already exists. Please choose a different username.")
+                # print("Username already exists. Please choose a different username.")
                 return False
 
     """ Username is valid """
@@ -29,22 +29,22 @@ def create_account(username, password):
 # Returns False if it failed to verify  #
 # user password and true if it succeeds #
 #########################################
-def login(username, password):
+def log_in(username, password):
     # Check if the ruser exists; Then verify password
     with open('db.txt', 'r') as db:
         for line in db:
-            existing_username, hashed_password = line.strip().split('', 1)
+            existing_username, hashed_password = line.strip().split(' ', 1)
             # Username found; Passwords match
             if existing_username == username:
                 if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-                    print("Login successful...")
+                    # print("Login successful...")
                     return True
 
             # Username found; Password mismatch
             else:
-                print("Invalid password. Login denied.")
+                # print("Invalid password. Login denied.")
                 return False
     
     # When username not found in db
-    print("Username not found. Login denied.")
+    # print("Username not found. Login denied.")
     return False
