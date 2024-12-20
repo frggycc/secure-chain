@@ -53,8 +53,30 @@ Here's how to create client certificates:
 	   openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key 
 	   -CAcreateserial -out client.crt -days 365 -sha256
 
+## Using AES for Confidentiality
+There's 
 
-## Using AES for Encryption
+## (Optional) Using Hashing for Integrity
+To ensure integrity, functions were written so that before encrypting over
+message, we would have data such as Data = Message || Hash.
+These three additional functions were written into both the client and server
+code: one is to apply the hash function to the message, one is to append the
+hash value to the message, and one is to verify if the message (if hashed) 
+matches the hash value appended to it.
+
+You can additionally encrypt the message and hash before sending it out for 
+additional security for messages that more heavily rely on integrity.
+
+
+
+### Explanation
+And example of this was used when sending the user's menu choice over to the
+server. It first went through the bcrypt_append function which then is returned
+as choice:hashvalue. After, it was encoded and sent over to the server. 
+
+The server then decodes it, splits the data by ":" to get the log choice and hash 
+value. Lastly, it will send the two to the bcrypt verify. If the two match, the 
+function returns true. Otherwise, it returns false.
 
 ## Step-by-Step
 1. Run the server program to start accepting connection requests
