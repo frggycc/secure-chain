@@ -98,8 +98,11 @@ def handle_client(client_socket, client_address):
     client_socket.close()
 
 if __name__ == "__main__":
+    # Require crt from client; Use CA to verify client crt
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    context.load_cert_chain(certfile='server.crt', keyfile='server.key')
+    context.load_cert_chain(certfile="server.crt", keyfile="server.key")
+    context.load_verify_locations(cafile="ca.crt")
+    context.verify_mode = ssl.CERT_REQUIRED 
 
     # Create socket and bind (IPv4 and TCP)
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -114,6 +117,13 @@ if __name__ == "__main__":
         while True:
             client_socket, client_address = secure_socket.accept()
             print(f"Connected to {client_address}")
+            
+            # Close connection if no certificate was provide from client
+            client_cert = client_socket.getpeercert()
+            if not client_cert:
+                print("No certificate provuded...")
+                client_socket.close()
+                continue
 
             # Create thread for each client connection
             # Might need to implement a way to avoid collisions

@@ -33,9 +33,12 @@ def bcrypt_verify(message, hash):
     return bcrypt.checkpw(message.encode(), hash.encode())
 
 def client_start():
+    # Load CA certificate and client certificate
+    # Fails if client ctr not signed by CA
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-    context.load_verify_locations(cafile="server.crt")
-
+    context.load_verify_locations(cafile="ca.crt")
+    context.load_cert_chain(certfile="client.crt", keyfile="client.key")
+    
     # Set socket settings
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
