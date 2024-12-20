@@ -1,13 +1,52 @@
 from login import log_in 
 from login import create_account
+from Cryptodome.Cipher import AES
+from Crypto.Util.Padding import pad
+from Crypto.Util.Padding import unpad
 import socket
 import threading
+import ssl
+import bcrypt
+
 
 # List/Number of max connections
 MAX_CONNECTIONS = 10;
-
 HOST = '127.0.0.1'
 PORT = 6226
+KEY = "1234567890123456"
+
+# Encrypt with AES; Accept decoded and return encoded
+def encrypt_message(message):
+    key = KEY.encode()
+    enc_cipher = AES.new(key, AES.MODE_ECB)
+    plain_text = message.encode()
+    plain_text = pad(plain_text, 16)
+    enc_message = enc_cipher.encrypt(plain_text)
+    return enc_message
+
+# Decrypt messages; Returns decode plaintext
+def decrypt_message(enc_message):
+    key = KEY.encode()
+    dec_cipher = AES.new(key, AES.MODE_ECB)
+    dec_message = dec_cipher.decrypt(enc_message)
+    dec_message = unpad(dec_message, 16)
+    return dec_message.decode()
+
+# Verify message integrity
+def bcrypt_append(message):
+    hashed_message, _ = bcrypt_hash(message)
+    data = f"{message}:{hashed_message.decode()}"
+    return data
+
+# Generate a bcrypt hash of a message
+def bcrypt_hash(message):
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(message.encode(), salt)
+    return hashed, salt
+
+# Verify match with hash and message
+def bcrypt_verify(message, hash):
+    return bcrypt.checkpw(message.encode(), hash.encode())
 
 # Get password and username variables from client
 def get_login(log_data):
@@ -18,32 +57,45 @@ def get_login(log_data):
 def handle_client(client_socket, client_address):
     while True:
         try:
-            # Does client have an account or want to create one?
-            log_choice = client_socket.recv(1024).decode()
+            # Receive data
+            data = client_socket.recv(1024).decode()
+            log_choice, received_hash = data.split(":")
 
+            # Verify integrity; Exit if both don't match
+            if not bcrypt_verify(log_choice, received_hash):
+                print("Integrity check failed...")
+                break
+            
             # Logging into existing account
             if log_choice == "2":
-                print("In choice 2...")
+                #### print("In choice 2...")
                 client_socket.send("Logging in...".encode())
 
-                # Receive password and username from client
-                log_data = client_socket.recv(1024).decode()
+                # Receive encrypted log in, then decrypt
+                enc_data = client_socket.recv(1024)
+                ####print("Accepted encrypted data...")
+                log_data = decrypt_message(enc_data)
                 username, password = get_login(log_data)
 
                 # Check if login valid and successful
                 valid_login = log_in(username, password)
                 if valid_login == True:
                     client_socket.send("Successful login".encode())
+                    ### ACCEPT ORDERS HERE; DECRYPT AND VERIFY
+
+                    client_socket.close()
                 else:
                     client_socket.send("Invalid password or username".encode())
 
             # Creating new account
             elif log_choice == "1":
-                print("In choice 1...")
+                ###print("In choice 1...")
                 client_socket.send("Creating account...".encode())
 
-                # Receive password and username from client
-                log_data = client_socket.recv(1024).decode()
+                # Receive encrypted log in, then decrypt
+                enc_data = client_socket.recv(1024)
+                ####print("Accepted encrypted data...")
+                log_data = decrypt_message(enc_data)
                 username, password = get_login(log_data)
 
                 # Check if creation successful or not
@@ -61,25 +113,28 @@ def handle_client(client_socket, client_address):
         except Exception as e:
             print(f"Error handling client: {e}")
             break
-
+        
     client_socket.close()
 
 if __name__ == "__main__":
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(certfile='server.crt', keyfile='server.key')
 
     # Create socket and bind (IPv4 and TCP)
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((HOST, PORT))
     server_socket.listen(MAX_CONNECTIONS)
 
-    # Display status
-    print(f"Server listening on {HOST}:{PORT}")
+    with context.wrap_socket(server_socket, server_side=True) as secure_socket:
+    #    Eventually add authentication here
+        # Display status
+        print(f"Server listening on {HOST}:{PORT}")
 
-    # Eventually add authentication here
-    while True:
-        client_socket, client_address = server_socket.accept()
-        print(f"Connected to {client_address}")
+        while True:
+            client_socket, client_address = secure_socket.accept()
+            print(f"Connected to {client_address}")
 
-        # Create thread for each client connection
-        # Might need to implement a way to avoid collisions
-        client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
-        client_thread.start()
+            # Create thread for each client connection
+            # Might need to implement a way to avoid collisions
+            client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+            client_thread.start()
