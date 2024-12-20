@@ -1,0 +1,67 @@
+# How to Use
+## Summary
+This program and these files are not at all ready to be thrown into a 
+real-world setting but rather showcase techniques that can be used to ensure
+authenticity, confidentiality, and integrity in communicating over a network.
+
+## Using Certificates and Login to Authenticate
+The program runs on using certificates to authenticate socket connections. 
+There will be a self-signed CA certifcate that will be used to sign other
+certificates. In both the server and client program, we use the load_verify_locations() 
+module to specify a trusted CA certificate.
+
+From the get-go, a server key and a server request file will be
+created and immidiately signed by our CA. After that, any client 
+that wishes to connect with our server will have to use a certificate 
+signed by our designated CA. This can be done by creating a client key
+and client cerrtificate (signed by our CA) to issue them out.
+
+So now, during the TLS handshake, both the server and the client can
+verify each other because both certificates are signed by a trusted CA.
+
+Additionally, a login system was implemented. Using a file of usernames
+and hashed passwords, we can keep track of who made what order. Additionally,
+it can later be improved to add roles so that certain actions are open
+to those with privileges.
+
+There are some additional features that could be used to improve the
+authentication process:
+	1. Make a list of revoked client certificates so that flagged
+	   or suspicious ceritificates, despite being signed by the 
+	   trust CA, will not be allowed to connect with the server
+	2. Set a shorter expiration period for client certificates so that
+	   they are issued out more frequently. It will also reduce risk
+	   in case certificates are compromised.
+	3. Implementing salt to our password files will undoubtitly make
+	   passwords harder to crack.
+	   
+### Explanation
+For this project, a CA key and certificate was generated. This acted as the
+trusted CA to be shared with between the server and clients.
+
+For both the server and client, keys and certificate signing request (CSR)
+were created for the CA to sign and issue out certificate files. If you
+attempt to use a crt file without it being signed by the trusted CA, the
+connection will fail.
+
+Here's how to create client certificates:
+	1. Generate a new key; KEEPS THESE SECURE
+	   openssl genrsa -out client.key 2048
+	2. Then generate a CSR to have your trusted CA sign
+	   openssl req -new -key client.key -out client.csr
+	3. Have it signed by the trusted CA; Then issue certs out
+	   openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key 
+	   -CAcreateserial -out client.crt -days 365 -sha256
+
+
+## Using AES for Encryption
+
+## Step-by-Step
+1. Run the server program to start accepting connection requests
+2. Run the client with the server IP to connect to, the port number,
+   and the 16 byte passphrase to be used to create the AES key 
+   (i.e. python3 client.py 127.0.0.1 6226 1234567890123456)
+3. If the client successfully connects to the server, the client
+   will be prompted to either sign in or created a new account
+ 
+
