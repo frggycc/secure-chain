@@ -1,13 +1,9 @@
-from login import log_in 
-from login import create_account
-from Cryptodome.Cipher import AES
-from Crypto.Util.Padding import pad
-from Crypto.Util.Padding import unpad
+from login import log_in, create_account
+from encryption import encrypt_message, decrypt_message
 import socket
-import threading
-import ssl
 import bcrypt
-
+import ssl
+import threading
 
 # List/Number of max connections
 MAX_CONNECTIONS = 10;
@@ -15,22 +11,11 @@ HOST = '127.0.0.1'
 PORT = 6226
 KEY = "1234567890123456"
 
-# Encrypt with AES; Accept decoded and return encoded
-def encrypt_message(message):
-    key = KEY.encode()
-    enc_cipher = AES.new(key, AES.MODE_ECB)
-    plain_text = message.encode()
-    plain_text = pad(plain_text, 16)
-    enc_message = enc_cipher.encrypt(plain_text)
-    return enc_message
+# # Encrypt with AES; Accept decoded and return encoded
+# def encrypt_message(message):
 
-# Decrypt messages; Returns decode plaintext
-def decrypt_message(enc_message):
-    key = KEY.encode()
-    dec_cipher = AES.new(key, AES.MODE_ECB)
-    dec_message = dec_cipher.decrypt(enc_message)
-    dec_message = unpad(dec_message, 16)
-    return dec_message.decode()
+# # Decrypt messages; Accept encoded and returns decode plaintext
+# def decrypt_message(enc_message):
 
 # Verify message integrity
 def bcrypt_append(message):
@@ -68,13 +53,11 @@ def handle_client(client_socket, client_address):
             
             # Logging into existing account
             if log_choice == "2":
-                #### print("In choice 2...")
                 client_socket.send("Logging in...".encode())
 
                 # Receive encrypted log in, then decrypt
                 enc_data = client_socket.recv(1024)
-                ####print("Accepted encrypted data...")
-                log_data = decrypt_message(enc_data)
+                log_data = decrypt_message(KEY, enc_data)
                 username, password = get_login(log_data)
 
                 # Check if login valid and successful
@@ -89,12 +72,10 @@ def handle_client(client_socket, client_address):
 
             # Creating new account
             elif log_choice == "1":
-                ###print("In choice 1...")
                 client_socket.send("Creating account...".encode())
 
                 # Receive encrypted log in, then decrypt
                 enc_data = client_socket.recv(1024)
-                ####print("Accepted encrypted data...")
                 log_data = decrypt_message(enc_data)
                 username, password = get_login(log_data)
 

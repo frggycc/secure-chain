@@ -1,33 +1,20 @@
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
-from Crypto.Util.Padding import unpad
+from login import log_in, create_account
+from encryption import encrypt_message, decrypt_message
 import socket
-import ssl
 import bcrypt
+import ssl
 import sys
-
 
 # Get IP, port, and key from client
 SERVER_IP = str(sys.argv[1])
 SERVER_PORT = int(sys.argv[2])
 SERVER_KEY = str(sys.argv[3])
 
-# Encrypt with AES; Accept decoded and return encoded
-def encrypt_message(message):
-    key = SERVER_KEY.encode()
-    enc_cipher = AES.new(key, AES.MODE_ECB)
-    plain_text = message.encode()
-    plain_text = pad(plain_text, 16)
-    enc_message = enc_cipher.encrypt(plain_text)
-    return enc_message
+# # Encrypt with AES; Accept decoded and return encoded
+# def encrypt_message(message):
 
-# Decrypt messages; Returns decode plaintext
-def decrypt_message(enc_message):
-    key = SERVER_KEY.encode()
-    dec_cipher = AES.new(key, AES.MODE_ECB)
-    dec_message = dec_cipher.decrypt(enc_message)
-    dec_message = unpad(dec_message, 16)
-    return dec_message.decode()
+# # Decrypt messages; Accept encoded and returns decode plaintext
+# def decrypt_message(enc_message):
 
 # Verify message integrity
 def bcrypt_append(message):
@@ -78,7 +65,7 @@ def client_start():
                 # user's username and password to be validated
                 username = input("Username: ")
                 password = input("Password: ")
-                login_info = encrypt_message(f"{username}:{password}")
+                login_info = encrypt_message(SERVER_KEY, f"{username}:{password}")
                 secure_socket.send(login_info)
             
                 # Was the sign-in valid?
