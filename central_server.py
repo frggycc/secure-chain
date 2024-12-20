@@ -1,5 +1,7 @@
 from login import log_in, create_account
 from encryption import encrypt_message, decrypt_message
+from cryptography.x509 import load_der_x509_certificate
+from cryptography.hazmat.primitives import serialization
 import socket
 import bcrypt
 import ssl
@@ -17,6 +19,13 @@ KEY = "1234567890123456"
 # # Decrypt messages; Accept encoded and returns decode plaintext
 # def decrypt_message(enc_message):
 
+# Extract client's public key from their certificate
+def extract_public_key(cert_binary):
+    cert = load_der_x509_certificate(cert_binary)
+    public_key = cert.public_key()
+
+    return public_key
+
 # Verify message integrity
 def bcrypt_append(message):
     hashed_message, _ = bcrypt_hash(message)
@@ -33,15 +42,21 @@ def bcrypt_hash(message):
 def bcrypt_verify(message, hash):
     return bcrypt.checkpw(message.encode(), hash.encode())
 
-# Get password and username variables from client
+# Get account information from client
 def get_login(log_data):
     username, password = log_data.split(":")
     return username, password
+def get_new(log_data):
+    username, password, first, last, email = log_data.split(":")
+    return username, password, first, last, email
 
 # Might write to serperate file and use import
-def handle_client(client_socket, client_address):
+def handle_client(client_socket, client_address, client_cert):
     while True:
         try:
+            # Get client's public key to use for signature
+            client_public_key = extract_public_key(client_cert)
+
             # Receive data
             data = client_socket.recv(1024).decode()
             log_choice, received_hash = data.split(":")
@@ -64,8 +79,8 @@ def handle_client(client_socket, client_address):
                 valid_login = log_in(username, password)
                 if valid_login == True:
                     client_socket.send("Successful login".encode())
-                    ### ACCEPT ORDERS HERE; DECRYPT AND VERIFY
-
+                    ### DO STUFF HERE ###
+                    
                     client_socket.close()
                 else:
                     client_socket.send("Invalid password or username".encode())
@@ -75,15 +90,20 @@ def handle_client(client_socket, client_address):
                 client_socket.send("Creating account...".encode())
 
                 # Receive encrypted log in, then decrypt
+                print("Receiving data...")
                 enc_data = client_socket.recv(1024)
-                log_data = decrypt_message(enc_data)
-                username, password = get_login(log_data)
+                log_data = decrypt_message(KEY, enc_data)
+                print(log_data)
+                username, password, first, last, email = get_new(log_data)
 
                 # Check if creation successful or not
-                valid_login = create_account(username, password)
+                print('Attempting to create account')
+                valid_login = create_account(username, password, first, last, email)
                 if valid_login == True:
+                    print("Account successfully created!")
                     client_socket.send("Account successfully created!".encode())
                 else:
+                    print("Username already exists!")
                     client_socket.send("Username already exists!".encode())
             
             # Invalid choice selection
@@ -119,13 +139,13 @@ if __name__ == "__main__":
             print(f"Connected to {client_address}")
             
             # Close connection if no certificate was provide from client
-            client_cert = client_socket.getpeercert()
+            client_cert = client_socket.getpeercert(binary_form=True)
             if not client_cert:
-                print("No certificate provuded...")
+                print("No certificate provided...")
                 client_socket.close()
                 continue
 
             # Create thread for each client connection
             # Might need to implement a way to avoid collisions
-            client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+            client_thread = threading.Thread(target=handle_client, args=(client_socket, client_address, client_cert))
             client_thread.start()
