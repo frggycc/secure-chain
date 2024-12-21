@@ -79,7 +79,55 @@ def handle_client(client_socket, client_address, client_cert):
                 valid_login = log_in(username, password)
                 if valid_login == True:
                     client_socket.send("Successful login".encode())
-                    ### DO STUFF HERE ###
+                    
+                    # Place Order
+                    client_socket.send("Welcome to the Airplane Parts Ordering System".encode())
+                    parts = {
+                        "1": ("Actuators", 500),
+                        "2": ("Hydraulics", 800),
+                        "3": ("Manifolds", 600),
+                        "4": ("Valves", 300),
+                        "5": ("Rods", 150),
+                    }
+                    
+                    while True:
+                        menu = "\nMenu:\n" \
+                               "1. Add an item to your order\n" \
+                               "2. View your current order\n" \
+                               "3. Complete your order and exit\n" \
+                               "Enter your choice (1, 2, or 3): "
+                        client_socket.send(menu.encode())
+                        choice = client_socket.recv(1024).decode()
+                        
+                        if choice == "1":
+                            part_list = "\nAvailable parts:\n"
+                            for key, value in parts.items():
+                                part_list += f"{key}. {value[0]} - ${value[1]}\n"
+                            part_list += "Enter the part number (1-5): "
+                            client_socket.send(part_list.encode())
+                            part = client_socket.recv(1024).decode()
+
+                            client_socket.send("Enter the quantity: ".encode())
+                            quantity = client_socket.recv(1024).decode()
+
+                            if part in parts and quantity.isdigit():
+                                part_name, price = parts[part]
+                                order_entry = f"{quantity} x {part_name} (${price * int(quantity)})"
+                                client_socket.send(f"Added to order: {order_entry}".encode())
+                                # Save or manage the order details as needed
+                            else:
+                                client_socket.send("Invalid part number or quantity. Try again.".encode())
+
+                        elif choice == "2":
+                            # Placeholder for viewing current order (to be implemented as needed)
+                            client_socket.send("Feature to view order is under construction.".encode())
+
+                        elif choice == "3":
+                            client_socket.send("Your order has been placed. Thank you for using our system!".encode())
+                            break
+
+                        else:
+                            client_socket.send("Invalid choice. Please select 1, 2, or 3.".encode())
                     
 
                 else:
