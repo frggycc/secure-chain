@@ -8,7 +8,7 @@ AES encryption, and bycrypt for password hashing. The main focus is on a server-
 While this project is not ready for a real-world deployment, it demostrates several key techniques
 and functionalities that can establish secure commucation channels.
 
-##Prerequisties
+## Prerequisties
 
 Before running this program, make sure you have the following configured:
 1. Python3
