@@ -15,19 +15,19 @@ Before running this program, make sure you have the following configured:
 2. Pip
 3. Bycrypt
 
-Install Python3 directions:
+# Install Python3 directions:
 
-  pyhton3 --version //Check if you have installed already, if so you can skip installation
-  sudo apt-get update
-  sudo apt-get install python3.6
+  'pyhton3 --version' //Check if you have installed already, if so you can skip installation
+  'sudo apt-get update'
+  'sudo apt-get install python3.6'
 
-Installing pip:
+# Installing pip:
 
-  sudo apt install python3-pip
+  'sudo apt install python3-pip'
 
-Installing bycrypt:
+# Installing bycrypt:
 
-  sudo apt-get install bycrypt
+  'sudo apt-get install bycrypt'
 
 ## Clone and set up the Repository
 
@@ -36,11 +36,11 @@ Installing bycrypt:
 
 ## Running the server and Client
 1. Start the server
-python3 server.py
+'python3 server.py'
 
 2. Run the client
 
-python3 client.py <SERVER_IP> <PORT> <AES_KEY>
+'python3 client.py <SERVER_IP> <PORT> <AES_KEY>'
 
 3. Log in or Create a New account
 
