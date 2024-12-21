@@ -81,7 +81,7 @@ def handle_client(client_socket, client_address, client_cert):
                     client_socket.send("Successful login".encode())
                     ### DO STUFF HERE ###
                     
-                    client_socket.close()
+
                 else:
                     client_socket.send("Invalid password or username".encode())
 
@@ -108,7 +108,6 @@ def handle_client(client_socket, client_address, client_cert):
             
             # Invalid choice selection
             else:
-                print("In invalid choice...")
                 client_socket.send("Invalid choice".encode())
 
         except Exception as e:

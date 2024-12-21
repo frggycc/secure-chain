@@ -4,6 +4,7 @@ import socket
 import bcrypt
 import ssl
 import sys
+import os
 import getpass
 
 # Get IP, port, and key from client
@@ -59,7 +60,7 @@ def client_start():
             choice = input(" Enter your choice (1 or 2): ")
 
             if choice == "1" or choice == "2":
-                # Hash and send data
+                # Append hash to data for verification
                 data = bcrypt_append(choice)
                 secure_socket.send(data.encode())
 
@@ -87,17 +88,22 @@ def client_start():
                 # Was the sign-in valid?
                 sign_valid = secure_socket.recv(1024).decode()
                 print(sign_valid)
+
+                if sign_valid != "Successful login":
+                    choice == "0"
+
             #If no valid choice picked
             else:
                 secure_socket.send(choice.encode())
                 status = secure_socket.recv(1024).decode()
-                
                 print(status)
-
+       
+        # LOOP FINISHED; USER VERIFIED
         # CLEAR AND GO TO DIFFERENT MENU TO SEND IN ORDERS
+        ## _ = os.system('clear')
+        
 
-
-        secure_socket.close()
+    secure_socket.close()
         
 if __name__ == "__main__":
     client_start()
