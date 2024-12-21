@@ -101,7 +101,66 @@ def client_start():
         # LOOP FINISHED; USER VERIFIED
         # CLEAR AND GO TO DIFFERENT MENU TO SEND IN ORDERS
         ## _ = os.system('clear')
-        
+            # LOOP FINISHED; USER VERIFIED
+        # CLEAR AND GO TO DIFFERENT MENU TO SEND IN ORDERS
+        ## _ = os.system('clear')
+    
+        # Order system
+        print("Welcome to the Airplane Parts Ordering System")
+        print("Available parts:")
+        print("1. Actuators - $500")
+        print("2. Hydraulics - $800")
+        print("3. Manifolds - $600")
+        print("4. Valves - $300")
+        print("5. Rods - $150")
+
+        order = []
+        while True:
+            print("\nMenu:")
+            print("1. Add an item to your order")
+            print("2. View your current order")
+            print("3. Complete your order and exit")
+            choice = input("Enter your choice (1, 2, or 3): ")
+
+            if choice == "1":
+                part = input("Enter the part number (1-5): ")
+                quantity = input("Enter the quantity: ")
+
+                if part in ["1", "2", "3", "4", "5"] and quantity.isdigit():
+                    part_name = {
+                        "1": "Actuators",
+                        "2": "Hydraulics",
+                        "3": "Manifolds",
+                        "4": "Valves",
+                        "5": "Rods"
+                    }[part]
+                    order.append((part_name, int(quantity)))
+                    print(f"Added {quantity} x {part_name} to your order.")
+                else:
+                    print("Invalid part number or quantity. Please try again.")
+            elif choice == "2":
+                if order:
+                    print("\nYour current order:")
+                    for item, qty in order:
+                        print(f"{item}: {qty}")
+                else:
+                    print("Your order is empty.")
+            elif choice == "3":
+                if order:
+                    order_message = "Order details:\n" + "\n".join(
+                        f"{item}: {qty}" for item, qty in order
+                    )
+                    encrypted_order = encrypt_message(SERVER_KEY, order_message)
+                    secure_socket.send(encrypted_order)
+                    print("\nYour order has been placed. Thank you!")
+                else:
+                    print("You did not order anything. Exiting...")
+                break
+            else:
+                print("Invalid choice. Please choose 1, 2, or 3.")
+
+    secure_socket.close()
+
 
     secure_socket.close()
         
