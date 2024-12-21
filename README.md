@@ -33,11 +33,9 @@ Installing bycrypt:
 
 1. Clone the repository
   git clone https://github.com/frggycc/secure-chain
-  cd secure-chain
 
 ## Running the server and Client
 1. Start the server
-cd secure-chain
 python3 server.py
 
 2. Run the client
